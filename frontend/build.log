@@ -1,0 +1,10 @@
+
+> frontend@0.1.0 build
+> react-scripts build
+
+Creating an optimized production build...
+Failed to compile.
+
+Module not found: Error: Can't resolve 'react-router-dom' in 'C:\Users\pc\OneDrive\Desktop\TIF\TIF-AI\frontend\src'
+
+

@@ -1,0 +1,24 @@
+{
+  "name": "tif-ai-cli",
+  "version": "1.0.0",
+  "description": "TIF-AI — Professional AI-powered inventory & logistics CLI",
+  "type": "module",
+  "main": "dist/tif-ai.js",
+  "bin": {
+    "tif-ai": "./dist/tif-ai.js"
+  },
+  "scripts": {
+    "postinstall": "node scripts/postinstall.js",
+    "build": "node scripts/build.js",
+    "dev": "node src/tif-ai.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "os": ["win32", "darwin", "linux"],
+  "keywords": ["tif-ai", "cli", "inventory", "logistics", "ai"],
+  "files": [
+    "dist/",
+    "scripts/"
+  ]
+}

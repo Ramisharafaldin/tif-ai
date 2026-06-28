@@ -1,0 +1,68 @@
+npm verbose cli C:\Users\pc\AppData\Local\pi-node\current\node.exe C:\Users\pc\AppData\Local\pi-node\current\node_modules\npm\bin\npm-cli.js
+npm info using npm@10.9.8
+npm info using node@v22.23.1
+npm silly config load:file:C:\Users\pc\AppData\Local\pi-node\current\node_modules\npm\npmrc
+npm silly config load:file:C:\Users\pc\OneDrive\Desktop\TIF\TIF-AI\frontend\.npmrc
+npm silly config load:file:C:\Users\pc\.npmrc
+npm silly config load:file:C:\Users\pc\AppData\Local\pi-node\current\etc\npmrc
+npm verbose title npm install
+npm verbose argv "install" "--loglevel" "silly"
+npm verbose logfile logs-max:10 dir:C:\Users\pc\AppData\Local\npm-cache\_logs\2026-06-26T17_50_15_988Z-
+npm verbose logfile could not be created: Error: EPERM: operation not permitted, open 'C:\Users\pc\AppData\Local\npm-cache\_logs\2026-06-26T17_50_15_988Z-debug-0.log'
+npm verbose logfile no logfile created
+npm silly logfile start cleaning logs, removing 1 files
+npm silly packumentCache heap:2089811968 maxSize:522452992 maxEntrySize:261226496
+npm silly logfile error removing log file C:\Users\pc\AppData\Local\npm-cache\_logs\2026-06-24T23_14_18_662Z-debug-0.log [Error: EPERM: operation not permitted, unlink 'C:\Users\pc\AppData\Local\npm-cache\_logs\2026-06-24T23_14_18_662Z-debug-0.log'] {
+npm silly logfile   errno: -4048,
+npm silly logfile   code: 'EPERM',
+npm silly logfile   syscall: 'unlink',
+npm silly logfile   path: 'C:\\Users\\pc\\AppData\\Local\\npm-cache\\_logs\\2026-06-24T23_14_18_662Z-debug-0.log'
+npm silly logfile }
+npm silly logfile done cleaning log files
+npm silly idealTree buildDeps
+npm silly fetch manifest react-router-dom@^6.22.0
+npm silly packumentCache full:https://registry.npmjs.org/react-router-dom cache-miss
+npm http fetch GET https://registry.npmjs.org/react-router-dom attempt 1 failed with EACCES
+npm http fetch GET https://registry.npmjs.org/react-router-dom attempt 2 failed with EACCES
+npm http fetch GET https://registry.npmjs.org/react-router-dom attempt 3 failed with EACCES
+npm silly placeDep ROOT react-router-dom@ OK for: frontend@0.1.0 want: ^6.22.0
+npm verbose type system
+npm verbose stack FetchError: request to https://registry.npmjs.org/react-router-dom failed, reason: 
+npm verbose stack     at ClientRequest.<anonymous> (C:\Users\pc\AppData\Local\pi-node\current\node_modules\npm\node_modules\minipass-fetch\lib\index.js:130:14)
+npm verbose stack     at ClientRequest.emit (node:events:519:28)
+npm verbose stack     at emitErrorEvent (node:_http_client:108:11)
+npm verbose stack     at _destroy (node:_http_client:967:9)
+npm verbose stack     at onSocketNT (node:_http_client:987:5)
+npm verbose stack     at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+npm error code EACCES
+npm error errno EACCES
+npm error FetchError: request to https://registry.npmjs.org/react-router-dom failed, reason: 
+npm error     at ClientRequest.<anonymous> (C:\Users\pc\AppData\Local\pi-node\current\node_modules\npm\node_modules\minipass-fetch\lib\index.js:130:14)
+npm error     at ClientRequest.emit (node:events:519:28)
+npm error     at emitErrorEvent (node:_http_client:108:11)
+npm error     at _destroy (node:_http_client:967:9)
+npm error     at onSocketNT (node:_http_client:987:5)
+npm error     at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+npm error   code: 'EACCES',
+npm error   errno: 'EACCES',
+npm error   type: 'system',
+npm error   requiredBy: '.'
+npm error }
+npm error
+npm error The operation was rejected by your operating system.
+npm error It's possible that the file was already in use (by a text editor or antivirus),
+npm error or that you lack permissions to access it.
+npm error
+npm error If you believe this might be a permissions issue, please double-check the
+npm error permissions of the file and its containing directories, or try running
+npm error the command again as root/Administrator.
+npm silly unfinished npm timer reify 1782496220724
+npm silly unfinished npm timer reify:loadTrees 1782496220726
+npm verbose cwd C:\Users\pc\OneDrive\Desktop\TIF\TIF-AI\frontend
+npm verbose os Windows_NT 10.0.19042
+npm verbose node v22.23.1
+npm verbose npm  v10.9.8
+npm verbose exit 1
+npm verbose code 1
+npm error Log files were not written due to an error writing to the directory: C:\Users\pc\AppData\Local\npm-cache\_logs
+npm error You can rerun the command with `--loglevel=verbose` to see the logs in your terminal
