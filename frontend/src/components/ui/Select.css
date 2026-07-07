@@ -1,0 +1,26 @@
+.select-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.select-label {
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+.select-field {
+  padding: 0.5rem 0.7rem;
+  border: 1px solid var(--border, rgba(0,0,0,0.15));
+  border-radius: 6px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  cursor: pointer;
+  min-height: 38px;
+}
+.select-field:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.select-error .select-field { border-color: #e74c3c; }
+.select-error-text { font-size: 0.8rem; color: #e74c3c; }

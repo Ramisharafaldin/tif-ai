@@ -1,112 +1,15 @@
-﻿.app {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
+/* Backward compatibility — old inline button/card patterns (pages not yet using components) */
+.btn-primary { background: var(--accent); color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 0.9rem; }
+.btn-primary:hover { opacity: 0.9; }
+.btn-secondary { background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--text-secondary); padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 0.9rem; }
+.btn-sm { background: var(--accent); color: white; border: none; padding: 0.25rem 0.6rem; border-radius: 3px; cursor: pointer; font-size: 0.8rem; }
+.btn-danger { background: #e74c3c; border: none; }
+.btn-danger:hover { opacity: 0.9; }
 
-.app-header {
-  background-color: var(--bg-secondary);
-  padding: 1rem;
-  border-bottom: 1px solid rgba(0,0,0,0.1);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.app-header h1 {
-  margin: 0;
-  font-size: 1.5rem;
-  color: var(--text-primary);
-}
-
-.app-header .controls {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.app-header button {
-  background-color: var(--accent);
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: var(--border-radius);
-  cursor: pointer;
-  font-size: 0.9rem;
-}
-
-.app-header button:hover {
-  opacity: 0.9;
-}
-
-.app-nav {
-  background-color: var(--bg-secondary);
-  border-bottom: 1px solid rgba(0,0,0,0.1);
-}
-
-.app-nav ul {
-  list-style: none;
-  display: flex;
-  flex-wrap: wrap;
-  margin: 0;
-  padding: 0.5rem;
-  gap: 0.5rem;
-}
-
-.app-nav li {
-  margin: 0;
-}
-
-.nav-link {
-  text-decoration: none;
-  padding: 0.5rem 1rem;
-  border-radius: var(--border-radius);
-  color: var(--text-primary);
-}
-
-.nav-link:hover,
-.nav-link.active {
-  background-color: var(--accent);
-  color: white;
-}
-
-.app-main {
-  flex: 1;
-  padding: 2rem;
-  overflow-y: auto;
-}
-
-/* Dashboard page specific */
-.dashboard-page .placeholder {
-  background-color: var(--bg-secondary);
-  border: 2px dashed var(--text-secondary);
-  border-radius: var(--border-radius);
-  padding: 2rem;
-  text-align: center;
-  color: var(--text-secondary);
-}
-
-/* Generic placeholder */
-.placeholder {
-  background-color: var(--bg-secondary);
-  border: 1px solid var(--text-secondary);
-  border-radius: var(--border-radius);
-  padding: 1rem;
-  margin-top: 1rem;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .app-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  .app-header .controls {
-    align-self: flex-end;
-  }
-  .app-nav ul {
-    justify-content: center;
-  }
-}
+/* Card trend variants (legacy inline patterns: <div className="card trend-...">) */
+.card.trend-up { border-inline-start-color: #2ecc71; }
+.card.trend-down { border-inline-start-color: #e74c3c; }
+.card.trend-stable { border-inline-start-color: #3498db; }
+.card.status-out { border-inline-start-color: #e74c3c; }
+.card.status-low { border-inline-start-color: #f39c12; }
+.card.status-over { border-inline-start-color: #3498db; }

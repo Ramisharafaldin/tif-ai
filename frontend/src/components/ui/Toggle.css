@@ -1,0 +1,52 @@
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+.toggle-disabled { opacity: 0.5; cursor: not-allowed; }
+.toggle-track input { position: absolute; opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 22px;
+  background: #bdc3c7;
+  border-radius: 22px;
+  transition: background 0.2s;
+}
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  height: 16px;
+  width: 16px;
+  left: 3px;
+  bottom: 3px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+.toggle-track input:checked + .toggle-slider { background: var(--accent); }
+.toggle-track input:checked + .toggle-slider::before { transform: translateX(18px); }
+.toggle-label { font-size: 0.85rem; color: var(--text-primary); }
+
+.toggle-group {
+  display: inline-flex;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.toggle-group-btn {
+  background: transparent;
+  color: var(--text-primary);
+  border: none;
+  padding: 0.4rem 0.8rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background 0.15s, color 0.15s;
+}
+.toggle-group-btn.active {
+  background: var(--accent);
+  color: white;
+}
+.toggle-group-btn:not(.active):hover { background: var(--bg-secondary); }

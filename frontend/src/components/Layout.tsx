@@ -1,28 +1,35 @@
-﻿import React from 'react';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
+import { NavLink } from 'react-router-dom';
 import './../theme/theme.css';
+import './layout/Layout.css';
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
-  const { darkMode, toggleDarkMode, rtl, toggleRTL } = useTheme();
+  const { t } = useTranslation();
+  const { theme, toggleTheme, toggleLanguage } = useTheme();
 
   return (
-    <div className="app" data-theme={darkMode ? "dark" : "light"} dir={rtl ? "rtl" : "ltr"}>
+    <div className="app">
       <header className="app-header">
-        <h1>TIF-AI Dashboard</h1>
+        <h1>{t('layout.title')}</h1>
         <div className="controls">
-          <button onClick={toggleDarkMode}>
-            Switch to {darkMode ? "Light" : "Dark"} Mode
+          <button onClick={toggleTheme}>
+            {theme === 'dark' ? '☀️' : '🌙'} {theme === 'dark' ? t('common.lightMode') : t('common.darkMode')}
           </button>
-          <button onClick={toggleRTL}>
-            Switch to {rtl ? "LTR" : "RTL"}
+          <button onClick={toggleLanguage}>
+            {t('common.language')}
           </button>
         </div>
       </header>
       <main className="app-main">{children}</main>
+      <NavLink to="/settings" className="settings-fab" title={t('nav.settings')}>
+        ⚙️
+      </NavLink>
     </div>
   );
 };

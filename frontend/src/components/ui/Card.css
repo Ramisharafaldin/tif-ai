@@ -1,0 +1,14 @@
+.card {
+  background: var(--bg-secondary);
+  padding: 1.25rem;
+  border-radius: 8px;
+  border-inline-start: 4px solid var(--accent);
+}
+.card h3 { margin: 0 0 0.5rem; font-size: 0.85rem; text-transform: uppercase; color: var(--text-secondary); }
+.card-value { font-size: 1.5rem; font-weight: bold; color: var(--text-primary); }
+.card-trend { font-size: 0.85rem; text-transform: capitalize; }
+.card-body { font-size: 0.85rem; color: var(--text-secondary); margin: 0.5rem 0 0; }
+
+.card-out { border-inline-start-color: #e74c3c; }
+.card-low { border-inline-start-color: #f39c12; }
+.card-over { border-inline-start-color: #3498db; }

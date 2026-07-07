@@ -1,0 +1,85 @@
+{
+  "common": {
+    "loading": "جاري التحميل...",
+    "error": "خطأ",
+    "agent": "الوكيل",
+    "noData": "لا توجد بيانات",
+    "darkMode": "داكن",
+    "lightMode": "فاتح",
+    "language": "English",
+    "from": "من",
+    "to": "إلى"
+  },
+  "nav": {
+    "dashboard": "لوحة البيانات",
+    "inventory": "المخزون",
+    "forecasting": "التنبؤ",
+    "transfers": "النقل",
+    "settings": "الإعدادات"
+  },
+  "layout": {
+    "title": "TIF-AI لوحة التحكم"
+  },
+  "dashboard": {
+    "title": "لوحة البيانات",
+    "overview": "نظرة عامة",
+    "kpiComparison": "مقارنة المؤشرات",
+    "alerts": "تنبيهات",
+    "insights": "رؤى",
+    "confidence": "الثقة"
+  },
+  "inventory": {
+    "title": "المخزون",
+    "management": "إدارة المخزون",
+    "totalProducts": "إجمالي المنتجات",
+    "stockValue": "قيمة المخزون",
+    "totalItems": "إجمالي القطع",
+    "outOfStock": "نفد من المخزون",
+    "lowStock": "مخزون منخفض",
+    "overstocked": "فائض المخزون",
+    "items": "عناصر المخزون",
+    "table": {
+      "code": "الكود",
+      "name": "الاسم",
+      "branch": "الفرع",
+      "stock": "المخزون",
+      "value": "القيمة",
+      "status": "الحالة"
+    }
+  },
+  "forecasting": {
+    "title": "التنبؤ",
+    "demandForecast": "التنبؤ بالطلب",
+    "period": "الفترة",
+    "forecastQty": "الكمية المتوقعة",
+    "forecastValue": "القيمة المتوقعة",
+    "forecastPeriod": "فترة التنبؤ",
+    "days_7": "٧ أيام",
+    "days_30": "٣٠ يومًا",
+    "days_60": "٦٠ يومًا",
+    "days_90": "٩٠ يومًا",
+    "chartTitle": "أفضل ١٠ منتجات — التوقع مقابل التاريخي",
+    "productForecasts": "تنبؤات المنتجات",
+    "table": {
+      "product": "المنتج",
+      "name": "الاسم",
+      "avgSales": "متوسط المبيعات/اليوم",
+      "forecast": "التوقع",
+      "confidence": "الثقة"
+    }
+  },
+  "transfers": {
+    "title": "النقل",
+    "logistics": "النقل واللوجستيات",
+    "noRecommendations": "لا توجد توصيات نقل في الوقت الحالي.",
+    "recommendations": "توصيات النقل",
+    "table": {
+      "product": "المنتج",
+      "from": "من",
+      "to": "إلى",
+      "qty": "الكمية",
+      "priority": "الأولوية",
+      "reason": "السبب"
+    }
+  }
+}

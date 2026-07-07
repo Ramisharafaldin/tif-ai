@@ -1,0 +1,28 @@
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.input-label {
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+.input-field {
+  padding: 0.5rem 0.7rem;
+  border: 1px solid var(--border, rgba(0,0,0,0.15));
+  border-radius: 6px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  transition: border-color 0.15s;
+}
+.input-field:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.15);
+}
+.input-field:disabled { opacity: 0.6; cursor: not-allowed; }
+.input-error .input-field { border-color: #e74c3c; }
+.input-error-text { font-size: 0.8rem; color: #e74c3c; }
+.input-helper { font-size: 0.8rem; color: var(--text-secondary); }

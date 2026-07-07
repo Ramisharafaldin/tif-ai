@@ -1,10 +1,10 @@
-﻿from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field
 from typing import List, Optional, Union, Literal
 
 class KPIItem(BaseModel):
     name: str
     value: Union[int, float]
-    format: Literal['currency', 'number', 'percent']
+    format: Literal['number', 'percent']
     trend: Literal['up', 'down', 'stable']
     explanation: str
 

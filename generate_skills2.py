@@ -1,4 +1,4 @@
-﻿import os
+import os
 import re
 
 # Read the skills catalog with error handling

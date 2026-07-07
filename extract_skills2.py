@@ -1,4 +1,4 @@
-﻿import re
+import re
 import os
 
 with open('docs/skills_catalog.md', 'r', encoding='utf-8', errors='ignore') as f:

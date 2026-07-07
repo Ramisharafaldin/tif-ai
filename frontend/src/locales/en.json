@@ -1,0 +1,85 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "agent": "Agent",
+    "noData": "No data available",
+    "darkMode": "Dark",
+    "lightMode": "Light",
+    "language": "العربية",
+    "from": "From",
+    "to": "To"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "inventory": "Inventory",
+    "forecasting": "Forecasting",
+    "transfers": "Transfers",
+    "settings": "Settings"
+  },
+  "layout": {
+    "title": "TIF-AI Dashboard"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "overview": "Dashboard Overview",
+    "kpiComparison": "KPI Comparison",
+    "alerts": "Alerts",
+    "insights": "Insights",
+    "confidence": "Confidence"
+  },
+  "inventory": {
+    "title": "Inventory",
+    "management": "Inventory Management",
+    "totalProducts": "Total Products",
+    "stockValue": "Stock Value",
+    "totalItems": "Total Items",
+    "outOfStock": "Out of Stock",
+    "lowStock": "Low Stock",
+    "overstocked": "Overstocked",
+    "items": "Inventory Items",
+    "table": {
+      "code": "Code",
+      "name": "Name",
+      "branch": "Branch",
+      "stock": "Stock",
+      "value": "Value",
+      "status": "Status"
+    }
+  },
+  "forecasting": {
+    "title": "Forecasting",
+    "demandForecast": "Demand Forecasting",
+    "period": "Period",
+    "forecastQty": "Forecast Qty",
+    "forecastValue": "Forecast Value",
+    "forecastPeriod": "Forecast Period",
+    "days_7": "7 days",
+    "days_30": "30 days",
+    "days_60": "60 days",
+    "days_90": "90 days",
+    "chartTitle": "Top 10 Products — Forecast vs Historical",
+    "productForecasts": "Product Forecasts",
+    "table": {
+      "product": "Product",
+      "name": "Name",
+      "avgSales": "Avg Sales/Day",
+      "forecast": "Forecast",
+      "confidence": "Confidence"
+    }
+  },
+  "transfers": {
+    "title": "Transfers",
+    "logistics": "Transfers & Logistics",
+    "noRecommendations": "No transfer recommendations at this time.",
+    "recommendations": "Transfer Recommendations",
+    "table": {
+      "product": "Product",
+      "from": "From",
+      "to": "To",
+      "qty": "Qty",
+      "priority": "Priority",
+      "reason": "Reason"
+    }
+  }
+}

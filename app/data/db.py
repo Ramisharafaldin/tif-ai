@@ -1,4 +1,5 @@
 import os
+from typing import Optional
 from pathlib import Path
 import duckdb
 import pandas as pd
@@ -73,27 +74,59 @@ def init_db():
         updated_at TIMESTAMP DEFAULT now()
     )
     """)
+    # Products master table (CRUD)
+    con.execute("""
+    CREATE TABLE IF NOT EXISTS products (
+        product_code VARCHAR PRIMARY KEY,
+        product_name VARCHAR,
+        category VARCHAR,
+        unit_cost DOUBLE,
+        unit_price DOUBLE,
+        created_at VARCHAR,
+        updated_at VARCHAR
+    )
+    """)
+    # Users table (authentication)
+    con.execute("""
+    CREATE TABLE IF NOT EXISTS users (
+        id VARCHAR PRIMARY KEY,
+        username VARCHAR UNIQUE,
+        email VARCHAR,
+        password_hash VARCHAR,
+        full_name VARCHAR,
+        role VARCHAR DEFAULT 'viewer',
+        is_active BOOLEAN DEFAULT TRUE,
+        created_at VARCHAR
+    )
+    """)
     con.close()
 
-def load_inventory_data() -> pd.DataFrame:
-    """Load inventory data from CSV into DuckDB and return as DataFrame."""
+def load_inventory_data(start_date: str = None, end_date: str = None) -> pd.DataFrame:
     csv_path = DATA_DIR / 'inventory_data.csv'
     if not csv_path.exists():
         return pd.DataFrame()
     df = pd.read_csv(csv_path)
     con = get_duckdb_connection()
-    # Replace table
     con.execute('DELETE FROM inventory_data')
     con.register('df_temp', df)
     con.execute('INSERT INTO inventory_data SELECT * FROM df_temp')
     con.unregister('df_temp')
-    # Return data
-    result = con.execute('SELECT * FROM inventory_data').fetchdf()
+    query = 'SELECT * FROM inventory_data'
+    params = []
+    if start_date or end_date:
+        conditions = []
+        if start_date:
+            conditions.append('date >= ?')
+            params.append(start_date)
+        if end_date:
+            conditions.append('date <= ?')
+            params.append(end_date)
+        query += ' WHERE ' + ' AND '.join(conditions)
+    result = con.execute(query, params).fetchdf()
     con.close()
     return result
 
-def load_sales_data() -> pd.DataFrame:
-    """Load sales data from CSV into DuckDB and return as DataFrame."""
+def load_sales_data(start_date: str = None, end_date: str = None) -> pd.DataFrame:
     csv_path = DATA_DIR / 'sales_data.csv'
     if not csv_path.exists():
         return pd.DataFrame()
@@ -103,7 +136,18 @@ def load_sales_data() -> pd.DataFrame:
     con.register('df_temp', df)
     con.execute('INSERT INTO sales_data SELECT * FROM df_temp')
     con.unregister('df_temp')
-    result = con.execute('SELECT * FROM sales_data').fetchdf()
+    query = 'SELECT * FROM sales_data'
+    params = []
+    if start_date or end_date:
+        conditions = []
+        if start_date:
+            conditions.append('date >= ?')
+            params.append(start_date)
+        if end_date:
+            conditions.append('date <= ?')
+            params.append(end_date)
+        query += ' WHERE ' + ' AND '.join(conditions)
+    result = con.execute(query, params).fetchdf()
     con.close()
     return result
 
@@ -139,6 +183,52 @@ def get_sales(filters: dict = None) -> pd.DataFrame:
     df = con.execute(query, params).fetchdf()
     con.close()
     return df
+
+def get_all_products() -> list:
+    con = get_duckdb_connection()
+    rows = con.execute("SELECT product_code, product_name, category, unit_cost, unit_price, created_at, updated_at FROM products ORDER BY product_code").fetchall()
+    con.close()
+    return [{'product_code': r[0], 'product_name': r[1], 'category': r[2], 'unit_cost': r[3], 'unit_price': r[4], 'created_at': r[5], 'updated_at': r[6]} for r in rows]
+
+def create_product(code: str, name: str, category: str, unit_cost: float, unit_price: float) -> dict:
+    from datetime import datetime, timezone
+    now = datetime.now(timezone.utc).isoformat()
+    con = get_duckdb_connection()
+    con.execute("INSERT INTO products (product_code, product_name, category, unit_cost, unit_price, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)", [code, name, category, unit_cost, unit_price, now, now])
+    con.close()
+    return {'product_code': code, 'product_name': name, 'category': category, 'unit_cost': unit_cost, 'unit_price': unit_price, 'created_at': now, 'updated_at': now}
+
+def update_product(code: str, name: str = None, category: str = None, unit_cost: float = None, unit_price: float = None) -> Optional[dict]:
+    from datetime import datetime, timezone
+    now = datetime.now(timezone.utc).isoformat()
+    con = get_duckdb_connection()
+    existing = con.execute("SELECT * FROM products WHERE product_code = ?", [code]).fetchone()
+    if not existing:
+        con.close()
+        return None
+    new_name = name if name is not None else existing[1]
+    new_cat = category if category is not None else existing[2]
+    new_cost = unit_cost if unit_cost is not None else existing[3]
+    new_price = unit_price if unit_price is not None else existing[4]
+    con.execute("UPDATE products SET product_name = ?, category = ?, unit_cost = ?, unit_price = ?, updated_at = ? WHERE product_code = ?", [new_name, new_cat, new_cost, new_price, now, code])
+    con.close()
+    return {'product_code': code, 'product_name': new_name, 'category': new_cat, 'unit_cost': new_cost, 'unit_price': new_price, 'updated_at': now}
+
+def delete_product(code: str) -> bool:
+    con = get_duckdb_connection()
+    existing = con.execute("SELECT product_code FROM products WHERE product_code = ?", [code]).fetchone()
+    if not existing:
+        con.close()
+        return False
+    con.execute("DELETE FROM products WHERE product_code = ?", [code])
+    con.close()
+    return True
+
+def get_all_settings() -> dict:
+    con = get_duckdb_connection()
+    rows = con.execute('SELECT key, value, description FROM system_settings').fetchall()
+    con.close()
+    return {r[0]: {'value': r[1], 'description': r[2]} for r in rows}
 
 def log_agent_invocation(agent_name: str, input_dict: dict, output_dict: dict, execution_time_ms: float, success: bool = True):
     """Log an agent call to audit_log."""

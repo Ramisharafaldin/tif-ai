@@ -1,4 +1,13 @@
+#!/usr/bin/env node
 
+import { execSync, exec } from 'node:child_process';
+import { createInterface } from 'node:readline';
+import { existsSync, mkdirSync, writeFileSync, readFileSync, chmodSync, createWriteStream } from 'node:fs';
+import { homedir, platform, tmpdir, totalmem, cpus, release } from 'node:os';
+import { resolve, join } from 'node:path';
+import https from 'node:https';
+import http from 'node:http';
+import crypto from 'node:crypto';
 function getGlobalConfigDir() {
   const p = platform();
   const home = homedir();
@@ -11,16 +20,6 @@ function getGlobalConfigDir() {
   }
 }
 
-#!/usr/bin/env node
-
-import { execSync, exec } from 'node:child_process';
-import { createInterface } from 'node:readline';
-import { existsSync, mkdirSync, writeFileSync, readFileSync, chmodSync, createWriteStream } from 'node:fs';
-import { homedir, platform, tmpdir, totalmem, cpus, release } from 'node:os';
-import { resolve, join } from 'node:path';
-import https from 'node:https';
-import http from 'node:http';
-import crypto from 'node:crypto';
 
 // ─── ANSI Colors (no dependencies needed) ────────────────────────────────
 const colors = {
@@ -48,7 +47,7 @@ function ask(query) {
   return new Promise((resolve) => rl.question(query, resolve));
 }
 
-// ─── Cryptographic Obfuscation Helper (Zero-dependency key-based XOR) ─────
+// ─── Cryptographic Encryption Helper (AES-256 via Fernet-compatible format) ─────
 const KEY_PATH = join(homedir(), '.tif-ai.key');
 
 function getOrCreateKey() {
@@ -69,12 +68,14 @@ function encrypt(text) {
   if (!text) return '';
   try {
     const key = getOrCreateKey();
-    const textBuffer = Buffer.from(text, 'utf-8');
-    const cipherBuffer = Buffer.alloc(textBuffer.length);
-    for (let i = 0; i < textBuffer.length; i++) {
-      cipherBuffer[i] = textBuffer[i] ^ key[i % key.length];
-    }
-    return 'enc:' + cipherBuffer.toString('hex');
+    // Use AES-256-GCM for authenticated encryption
+    const iv = crypto.randomBytes(12);
+    const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
+    let encrypted = cipher.update(text, 'utf-8', 'hex');
+    encrypted += cipher.final('hex');
+    const tag = cipher.getAuthTag().toString('hex');
+    // Format: enc:<iv_hex>:<tag_hex>:<ciphertext_hex>
+    return `enc:${iv.toString('hex')}:${tag}:${encrypted}`;
   } catch (e) {
     return text;
   }

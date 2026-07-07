@@ -1,5 +1,6 @@
 import os
 import logging
+import base64
 from dotenv import load_dotenv
 from typing import Optional, List
 import json
@@ -19,7 +20,7 @@ def get_global_config_dir() -> Path:
     else:
         return home / '.config' / 'tif-ai'
 
-def get_decryption_key() -> bytes:
+def get_encryption_key() -> bytes:
     key_path = get_global_config_dir() / '.tif-ai.key'
     if key_path.exists():
         try:
@@ -30,19 +31,29 @@ def get_decryption_key() -> bytes:
 
 def decrypt_value(val: Optional[str]) -> Optional[str]:
     if not val or not val.startswith('enc:'):
-        return val # Not encrypted or empty
-    
-    hex_str = val.replace('enc:', '')
-    key = get_decryption_key()
-    if not key:
-        return val # No decryption key found, return as-is
-    
+        return val
+    payload = val[4:]
+    key = get_encryption_key()
+    if not key or len(key) != 32:
+        return val
     try:
-        cipher_bytes = bytes.fromhex(hex_str)
-        plain_bytes = bytearray(len(cipher_bytes))
-        for i in range(len(cipher_bytes)):
-            plain_bytes[i] = cipher_bytes[i] ^ key[i % len(key)]
-        return plain_bytes.decode('utf-8')
+        # AES-256-GCM format: enc:<iv_hex>:<tag_hex>:<ciphertext_hex>
+        if payload.count(':') == 2:
+            from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+            parts = payload.split(':')
+            iv = bytes.fromhex(parts[0])
+            tag = bytes.fromhex(parts[1])
+            ct = bytes.fromhex(parts[2])
+            aesgcm = AESGCM(key)
+            plain = aesgcm.decrypt(iv, ct + tag, None)
+            return plain.decode('utf-8')
+        # Legacy XOR format: enc:<hex>
+        else:
+            cipher_bytes = bytes.fromhex(payload)
+            plain_bytes = bytearray(len(cipher_bytes))
+            for i in range(len(cipher_bytes)):
+                plain_bytes[i] = cipher_bytes[i] ^ key[i % len(key)]
+            return plain_bytes.decode('utf-8')
     except Exception:
         return val
 

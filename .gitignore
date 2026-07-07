@@ -1,0 +1,50 @@
+# Python
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+*.egg
+.pytest_cache/
+
+# Node
+node_modules/
+frontend/node_modules/
+cli/node_modules/
+frontend/build/
+cli/dist/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project specific
+logs/
+*.log
+err.txt
+out.txt
+uvicorn*.txt
+*.err.txt
+*.out.txt
+
+# Database
+*.duckdb
+*.db
+*.sqlite
+
+# Sensitive
+*.key
+ai-config.json

@@ -1,4 +1,4 @@
-﻿"""
+"""
 Logging configuration for structured JSON logging.
 """
 import logging
