@@ -4,10 +4,14 @@ import { execSync, exec } from 'node:child_process';
 import { createInterface } from 'node:readline';
 import { existsSync, mkdirSync, writeFileSync, readFileSync, chmodSync, createWriteStream } from 'node:fs';
 import { homedir, platform, tmpdir, totalmem, cpus, release } from 'node:os';
-import { resolve, join } from 'node:path';
+import { resolve, join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import https from 'node:https';
 import http from 'node:http';
 import crypto from 'node:crypto';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const projectRoot = resolve(__dirname, '..');
 function getGlobalConfigDir() {
   const p = platform();
   const home = homedir();
@@ -48,7 +52,7 @@ function ask(query) {
 }
 
 // ─── Cryptographic Encryption Helper (AES-256 via Fernet-compatible format) ─────
-const KEY_PATH = join(homedir(), '.tif-ai.key');
+const KEY_PATH = join(getGlobalConfigDir(), '.tif-ai.key');
 
 function getOrCreateKey() {
   if (existsSync(KEY_PATH)) {
@@ -58,6 +62,10 @@ function getOrCreateKey() {
   }
   const key = crypto.randomBytes(32);
   try {
+    const configDir = getGlobalConfigDir();
+    if (!existsSync(configDir)) {
+      mkdirSync(configDir, { recursive: true });
+    }
     writeFileSync(KEY_PATH, key);
     chmodSync(KEY_PATH, '600');
   } catch (e) {}
@@ -1094,12 +1102,103 @@ function showSummary(provider, configPath, models) {
   console.log();
 }
 
+async function installProjectDependencies() {
+  printHeader();
+  console.log(`${bold}📦 Checking and Installing Project Dependencies${reset}\n`);
+
+  const frontendDir = join(projectRoot, 'frontend');
+  const venvDir = join(projectRoot, 'venv');
+  const isWin = platform() === 'win32';
+
+  const hasFrontendDeps = existsSync(join(frontendDir, 'node_modules'));
+  const hasVenv = existsSync(venvDir);
+
+  if (hasFrontendDeps && hasVenv) {
+    success('All node and python virtual environment dependencies are already installed!');
+    await sleep(1000);
+    return;
+  }
+
+  if (!await confirmQuestion('Would you like to install project dependencies automatically? (Recommended)')) {
+    info('Skipping automatic dependency installation.');
+    return;
+  }
+
+  // 1. Frontend Node Dependencies
+  if (!hasFrontendDeps) {
+    const sp = spinner('Installing Frontend dependencies (npm install)... This may take a while.');
+    const res = await runCommandAsync('npm install', { cwd: frontendDir });
+    if (res.success) {
+      sp.stop('Frontend packages installed successfully!', 'success');
+    } else {
+      sp.stop('Frontend package installation failed or has warnings.', 'warn');
+      if (res.stderr) console.log(dim + res.stderr + reset);
+    }
+  } else {
+    success('Frontend node_modules already exists.');
+  }
+
+  // 2. Python Virtual Environment and Backend Dependencies
+  if (!hasVenv) {
+    const sp = spinner('Creating Python virtual environment (venv)...');
+    let res = await runCommandAsync('python -m venv venv', { cwd: projectRoot });
+    if (!res.success) {
+      res = await runCommandAsync('python3 -m venv venv', { cwd: projectRoot });
+    }
+
+    if (res.success) {
+      sp.stop('Virtual environment created successfully!', 'success');
+    } else {
+      sp.stop('Failed to create virtual environment automatically.', 'error');
+      if (res.stderr) console.error(red + res.stderr + reset);
+      info('Please create the venv manually by running: python -m venv venv');
+      return;
+    }
+  } else {
+    success('Python virtual environment already exists.');
+  }
+
+  // 3. Install requirements.txt
+  const pipExec = isWin ? join(venvDir, 'Scripts', 'pip.exe') : join(venvDir, 'bin', 'pip');
+  const spPip = spinner('Installing Python backend requirements (pip install)...');
+  const resPip = await runCommandAsync(`"${pipExec}" install -r requirements.txt`, { cwd: projectRoot });
+  if (resPip.success) {
+    spPip.stop('Python backend dependencies installed successfully!', 'success');
+  } else {
+    spPip.stop('Python backend installation failed or had issues.', 'warn');
+    if (resPip.stderr) console.log(dim + resPip.stderr + reset);
+  }
+
+  // 4. Create .env file if it doesn't exist
+  const envFile = join(projectRoot, '.env');
+  const envExample = join(projectRoot, '.env.example');
+  if (!existsSync(envFile)) {
+    if (existsSync(envExample)) {
+      try {
+        const content = readFileSync(envExample, 'utf-8');
+        writeFileSync(envFile, content, 'utf-8');
+        success('Created .env file from .env.example');
+      } catch (e) {
+        warn(`Could not copy .env.example to .env: ${e.message}`);
+      }
+    } else {
+      warn('No .env.example found in the project root to copy to .env.');
+    }
+  } else {
+    success('.env file already exists.');
+  }
+}
+
 // ─── Main ────────────────────────────────────────────────────────────────
 async function main() {
   try {
     // Step 1: System Check
     await checkSystem();
     await ask(`\n${dim}Press Enter to continue...${reset}`);
+
+    // Install project dependencies
+    await installProjectDependencies();
+    await ask(`\n${dim}Press Enter to configure AI provider...${reset}`);
 
     // Step 2: Select Provider
     const provider = await selectProvider();

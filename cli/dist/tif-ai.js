@@ -2,7 +2,7 @@
 
 import { execSync, exec, spawn } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync, appendFileSync } from 'node:fs';
-import { platform, totalmem, cpus, release, homedir } from 'node:os';
+import { platform, totalmem, cpus, release, homedir, tmpdir } from 'node:os';
 import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createServer } from 'node:net';
@@ -94,6 +94,39 @@ function isPortFree(port) {
     });
     server.listen(port, '127.0.0.1');
   });
+}
+
+function decrypt(encrypted) {
+  if (!encrypted || !encrypted.startsWith('enc:')) return encrypted;
+  try {
+    const payload = encrypted.slice(4);
+    const keyPath = join(getGlobalConfigDir(), '.tif-ai.key');
+    if (!existsSync(keyPath)) return encrypted;
+    const key = readFileSync(keyPath);
+    if (key.length !== 32) return encrypted;
+    // AES-256-GCM format: enc:<iv_hex>:<tag_hex>:<ciphertext_hex>
+    if (payload.split(':').length === 3) {
+      const { createDecipheriv } = require('node:crypto');
+      const parts = payload.split(':');
+      const iv = Buffer.from(parts[0], 'hex');
+      const tag = Buffer.from(parts[1], 'hex');
+      const ct = Buffer.from(parts[2], 'hex');
+      const decipher = createDecipheriv('aes-256-gcm', key, iv);
+      decipher.setAuthTag(tag);
+      let plain = decipher.update(ct, 'hex', 'utf-8');
+      plain += decipher.final('utf-8');
+      return plain;
+    }
+    // Legacy XOR format: enc:<hex>
+    const buf = Buffer.from(payload, 'hex');
+    const result = Buffer.alloc(buf.length);
+    for (let i = 0; i < buf.length; i++) {
+      result[i] = buf[i] ^ key[i % key.length];
+    }
+    return result.toString('utf-8');
+  } catch (e) {
+    return encrypted;
+  }
 }
 
 function pingUrl(url) {
@@ -524,13 +557,22 @@ async function cmdStart() {
   const port8000Free = await isPortFree(8000);
   const port3000Free = await isPortFree(3000);
 
-  if (!port8000Free) {
-    console.error(`${red}Ã¢Å“â€” Port 8000 (Backend) is already in use. Please free this port before starting.${reset}`);
-    process.exit(1);
-  }
-  if (!port3000Free) {
-    console.error(`${red}Ã¢Å“â€” Port 3000 (Frontend) is already in use. Please free this port before starting.${reset}`);
-    process.exit(1);
+  if (!port8000Free || !port3000Free) {
+    const busyPorts = [];
+    if (!port8000Free) busyPorts.push('8000 (Backend)');
+    if (!port3000Free) busyPorts.push('3000 (Frontend)');
+    console.log(`  ${yellow}Ã¢Å¡Â  Port(s) ${busyPorts.join(', ')} ${busyPorts.length > 1 ? 'are' : 'is'} already in use.${reset}`);
+    console.log(`  ${cyan}Ã°Å¸â€  Options: (1) Kill processes and restart  (2) Exit${reset}`);
+    const rl = createInterface({ input: process.stdin, output: process.stdout });
+    const answer = await new Promise(resolve => rl.question(`  Choose (1/2): `, ans => { rl.close(); resolve(ans.trim()); }));
+    if (answer === '1') {
+      console.log(`  ${cyan}Ã°Å¸â€  Killing processes on busy ports...${reset}`);
+      await cmdStopInternal();
+      console.log(`  ${green}Ã¢Å“â€ Ports freed. Continuing...${reset}\n`);
+    } else {
+      console.log(`  ${red}Ã¢Å“â€” Free the ports manually and try again.${reset}\n`);
+      process.exit(1);
+    }
   }
 
   console.log(`  ${cyan}Ã°Å¸Å¡â‚¬ Launching services...${reset}`);
@@ -815,13 +857,8 @@ async function cmdTest() {
 
 // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Help & CLI Entry Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
-// 6. Stop command
-async function cmdStop() {
-  console.log(`\n${bold}=====================================================${reset}`);
-  console.log(`             Stopping TIF-AI Services`);
-  console.log(`=====================================================\n`);
-  process.stdout.write(`  ${cyan}🔍 Identifying processes on ports 3000 and 8000...${reset}`);
-  
+// 6. Stop command (internal - no header)
+async function cmdStopInternal() {
   const isWin = platform() === 'win32';
   let killed = 0;
   
@@ -842,10 +879,8 @@ async function cmdStop() {
           if (parts[parts.length - 1] && parts[parts.length - 1] !== '0') pids.add(parts[parts.length - 1]);
         });
       }
-      process.stdout.write('\r' + ' '.repeat(60) + '\r');
       for (const pid of pids) {
         runCommand(`taskkill /F /PID ${pid}`);
-        console.log(`  ${green}✔ Killed process ${pid}${reset}`);
         killed++;
       }
     } catch (e) {}
@@ -856,22 +891,29 @@ async function cmdStop() {
       const res3000 = runCommand('lsof -t -i:3000');
       if (res8000.stdout) res8000.stdout.split('\n').forEach(pid => pids.add(pid.trim()));
       if (res3000.stdout) res3000.stdout.split('\n').forEach(pid => pids.add(pid.trim()));
-      
-      process.stdout.write('\r' + ' '.repeat(60) + '\r');
       for (const pid of pids) {
         if (pid) {
           runCommand(`kill -9 ${pid}`);
-          console.log(`  ${green}✔ Killed process ${pid}${reset}`);
           killed++;
         }
       }
     } catch (e) {}
   }
-  
+  return killed;
+}
+
+// 6b. Stop command (public)
+async function cmdStop() {
+  console.log(`\n${bold}=====================================================${reset}`);
+  console.log(`             Stopping TIF-AI Services`);
+  console.log(`=====================================================\n`);
+  process.stdout.write(`  ${cyan}🔍 Identifying processes on ports 3000 and 8000...${reset}`);
+  const killed = await cmdStopInternal();
+  process.stdout.write('\r' + ' '.repeat(60) + '\r');
   if (killed === 0) {
     console.log(`  ${yellow}⚠ No active services found on ports 3000/8000.${reset}\n`);
   } else {
-    console.log(`\n${green}✔ Services stopped successfully.${reset}\n`);
+    console.log(`  ${green}✔ Killed ${killed} process(es). Services stopped.${reset}\n`);
   }
 }
 
@@ -1095,7 +1137,55 @@ async function cmdRestore() {
   console.log(`\n${bold}=====================================================${reset}`);
   console.log(`             Restoring TIF-AI Data`);
   console.log(`=====================================================\n`);
-  console.log(`  ${yellow}⚠ Note: This requires extracting a backup folder manually over 'data' and 'config'. Automated restore coming soon.${reset}\n`);
+  const backupsDir = join(projectRoot, 'backups');
+  if (!existsSync(backupsDir)) {
+    console.log(`  ${yellow}⚠ No backups found in '${backupsDir}'.${reset}\n`);
+    return;
+  }
+  const entries = readdirSync(backupsDir).filter(e => e.startsWith('backup_')).sort().reverse();
+  if (entries.length === 0) {
+    console.log(`  ${yellow}⚠ No backups found.${reset}\n`);
+    return;
+  }
+  console.log(`  ${bold}Available Backups:${reset}\n`);
+  entries.forEach((e, i) => {
+    const stat = statSync(join(backupsDir, e));
+    const date = stat.birthtime.toISOString().replace('T', ' ').substring(0, 19);
+    console.log(`  ${green}[${i + 1}]${reset} ${e}  ${dim}(${date})${reset}`);
+  });
+  console.log();
+  const rl = createInterface({ input: process.stdin, output: process.stdout });
+  const answer = await new Promise(resolve => rl.question(`  Select backup to restore (1-${entries.length}): `, ans => { rl.close(); resolve(ans.trim()); }));
+  const idx = parseInt(answer, 10) - 1;
+  if (isNaN(idx) || idx < 0 || idx >= entries.length) {
+    console.log(`  ${red}✘ Invalid selection.${reset}\n`);
+    return;
+  }
+  const selected = entries[idx];
+  const backupPath = join(backupsDir, selected);
+  const hasData = existsSync(join(backupPath, 'data'));
+  const hasConfig = existsSync(join(backupPath, 'config'));
+  if (!hasData && !hasConfig) {
+    console.log(`  ${red}✘ Backup '${selected}' contains no data or config.${reset}\n`);
+    return;
+  }
+  const rl2 = createInterface({ input: process.stdin, output: process.stdout });
+  const confirm = await new Promise(resolve => rl2.question(`  ${red}${bold}⚠ WARNING:${reset} This will overwrite current data. Continue? (y/N): `, ans => { rl2.close(); resolve(ans.trim().toLowerCase()); }));
+  if (confirm !== 'y' && confirm !== 'yes') {
+    console.log(`  ${cyan}Restore cancelled.${reset}\n`);
+    return;
+  }
+  const isWin = platform() === 'win32';
+  const cpCmd = isWin ? 'xcopy /s /e /i /y' : 'cp -r';
+  if (hasData) {
+    console.log(`  ${cyan}Restoring data...${reset}`);
+    runCommand(`${cpCmd} "${join(backupPath, 'data')}" "${join(projectRoot, 'data')}"`, { cwd: projectRoot });
+  }
+  if (hasConfig) {
+    console.log(`  ${cyan}Restoring config...${reset}`);
+    runCommand(`${cpCmd} "${join(backupPath, 'config')}" "${join(projectRoot, 'config')}"`, { cwd: projectRoot });
+  }
+  console.log(`\n  ${green}✔ Restore complete from '${selected}'.${reset}\n`);
 }
 
 // 15. Logs command
@@ -1298,16 +1388,10 @@ async function cmdDataReload() {
   const isWin = platform() === 'win32';
   const pythonExec = isWin ? join(venvDir, 'Scripts', 'python.exe') : join(venvDir, 'bin', 'python');
   
-  const script = `
-import duckdb
-con = duckdb.connect('data/tifai.duckdb')
-con.execute("DROP TABLE IF EXISTS sales;")
-con.execute("DROP TABLE IF EXISTS inventory;")
-print("Tables dropped.")
-`;
-  writeFileSync(join(projectRoot, 'scratch_reload.py'), script);
-  runCommand(`"${pythonExec}" scratch_reload.py`, { cwd: projectRoot });
-  runCommand(isWin ? 'del scratch_reload.py' : 'rm scratch_reload.py', { cwd: projectRoot });
+  const script = `import duckdb; con = duckdb.connect(r'${join(projectRoot, 'data', 'tifai.duckdb')}'); con.execute("DROP TABLE IF EXISTS sales_data;"); con.execute("DROP TABLE IF EXISTS inventory_data;"); print("Tables dropped.");`;
+  const tmpFile = join(tmpdir(), 'tifai_reload.py');
+  writeFileSync(tmpFile, script);
+  runCommand(`"${pythonExec}" "${tmpFile}"`, { cwd: projectRoot });
   
   console.log(`\n  ${green}✔ Database cleared. It will automatically reload on backend startup.${reset}\n`);
 }
@@ -1316,16 +1400,77 @@ async function cmdDataQuality() {
   console.log(`\n${bold}=====================================================${reset}`);
   console.log(`             Data Quality Check`);
   console.log(`=====================================================\n`);
-  console.log(`  ${cyan}📊 Running quality checks on DuckDB...${reset}`);
-  console.log(`  ${green}✔ No anomalies detected.${reset}\n`);
+  const venvDir = join(projectRoot, 'venv');
+  const isWin = platform() === 'win32';
+  const pythonExec = isWin ? join(venvDir, 'Scripts', 'python.exe') : join(venvDir, 'bin', 'python');
+
+  const script = `
+import json, sys
+sys.path.insert(0, r'${projectRoot.replace(/\\/g, '\\\\')}')
+from app.services.skills import check_data_quality
+result = check_data_quality({})
+print(json.dumps(result, indent=2))
+`;
+  const tmpFile = join(tmpdir(), 'tifai_quality.py');
+  writeFileSync(tmpFile, script);
+  const res = runCommand(`"${pythonExec}" "${tmpFile}"`);
+  if (res.success) {
+    try {
+      const data = JSON.parse(res.stdout);
+      console.log(`  ${bold}Data Status:${reset}`);
+      console.log(`  Inventory Rows: ${cyan}${data.status.inventory_rows}${reset}`);
+      console.log(`  Sales Rows:     ${cyan}${data.status.sales_rows}${reset}`);
+      console.log(`  Has Data:       ${data.status.has_inventory_data ? green + 'Yes' : red + 'No'}${reset}`);
+      if (data.quality_issues.length > 0) {
+        console.log(`\n  ${yellow}⚠ ${data.quality_issues.length} quality issue(s) found:${reset}`);
+        data.quality_issues.forEach(issue => {
+          console.log(`  - [${issue.severity}] ${issue.table}.${issue.column}: ${issue.issue}`);
+        });
+      } else {
+        console.log(`\n  ${green}✔ No quality issues detected.${reset}`);
+      }
+    } catch (e) {
+      console.log(`  ${res.stdout}`);
+    }
+  } else {
+    console.log(`  ${red}✘ Quality check failed: ${res.stderr}${reset}`);
+  }
+  console.log();
 }
 
 async function cmdExport() {
   console.log(`\n${bold}=====================================================${reset}`);
   console.log(`             Exporting Database`);
   console.log(`=====================================================\n`);
-  console.log(`  ${cyan}📤 Exporting DuckDB to CSV...${reset}`);
-  console.log(`  ${green}✔ Export complete (saved to data/exports/).${reset}\n`);
+  const venvDir = join(projectRoot, 'venv');
+  const isWin = platform() === 'win32';
+  const pythonExec = isWin ? join(venvDir, 'Scripts', 'python.exe') : join(venvDir, 'bin', 'python');
+  const exportsDir = join(projectRoot, 'data', 'exports');
+  mkdirSync(exportsDir, { recursive: true });
+
+  const script = `
+import duckdb, os
+db_path = r'${join(projectRoot, 'data', 'tifai.duckdb').replace(/\\/g, '\\\\')}'
+out_dir = r'${exportsDir.replace(/\\/g, '\\\\')}'
+con = duckdb.connect(db_path)
+tables = con.execute("SELECT table_name FROM information_schema.tables WHERE table_schema='main'").fetchall()
+for t in tables:
+    name = t[0]
+    df = con.execute(f"SELECT * FROM {name}").fetchdf()
+    path = os.path.join(out_dir, f"{name}.csv")
+    df.to_csv(path, index=False)
+    print(f"  Exported {name}: {len(df)} rows")
+con.close()
+`;
+  const tmpFile = join(tmpdir(), 'tifai_export.py');
+  writeFileSync(tmpFile, script);
+  const res = runCommand(`"${pythonExec}" "${tmpFile}"`);
+  if (res.success) {
+    console.log(`${res.stdout}`);
+    console.log(`  ${green}✔ Export complete. Files saved to: ${exportsDir}${reset}\n`);
+  } else {
+    console.log(`  ${red}✘ Export failed: ${res.stderr}${reset}\n`);
+  }
 }
 
 function showHelp() {
