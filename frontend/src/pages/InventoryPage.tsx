@@ -79,7 +79,7 @@ const InventoryPage: React.FC = () => {
     return 'normal' as const;
   };
 
-  if (loading) return <div className="page"><h2>{i18n.language === 'ar' ? 'إدارة المخزون' : 'Inventory Management'}</h2><div className="card-grid"><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /></div><SkeletonTable rows={8} cols={6} /></div>;
+  if (loading) return <div className="page"><h2>{i18n.language === 'ar' ? 'إدارة المخزون' : 'Inventory Management'}</h2><div className="card-grid"><SkeletonCard /><SkeletonCard /><SkeletonCard /></div></div>;
   if (error) return <div className="page"><h2>{i18n.language === 'ar' ? 'إدارة المخزون' : 'Inventory Management'}</h2><p className="error">{error}</p></div>;
   if (!data) return null;
 
@@ -100,7 +100,7 @@ const InventoryPage: React.FC = () => {
         <DateRangePicker startDate={startDate} endDate={endDate} onStartChange={setStartDate} onEndChange={setEndDate} />
         <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
           {i18n.language === 'ar' ? 'أيام التخزين' : 'Stock Days'}
-          <input type="number" min={1} max={365} value={targetDays} onChange={e => setTargetDays(Math.max(1, +e.target.value || 30))} style={{ width: 60, padding: '0.3rem 0.5rem', border: '1px solid var(--border-color)', borderRadius: '4px' }} />
+          <input type="number" min={1} max={365} value={targetDays} onChange={e => setTargetDays(Math.max(1, +e.target.value || 30))} style={{ width: 60, padding: '0.3rem 0.5rem', border: '1px solid var(--border)' }} />
         </label>
       </div>
 
@@ -210,7 +210,7 @@ const InventoryPage: React.FC = () => {
         </table>
       </div>
 
-      <Modal open={showModal} onClose={() => setShowModal(false)} title={editing ? (i18n.language === 'ar' ? 'تعديل المنتج' : 'Edit Product') : (i18n.language === 'ar' ? 'إضافة منتج' : 'Add Product')} onSave={handleSave}>
+      <Modal open={showModal} onClose={() => setShowModal(false)} title={editing ? (i18n.language === 'ar' ? 'تعديل المنتج' : 'Edit Product') : (i18n.language === 'ar' ? 'إضافة منتج' : 'Add Product')} onConfirm={handleSave} confirmText={i18n.language === 'ar' ? 'حفظ' : 'Save'} cancelText={i18n.language === 'ar' ? 'إلغاء' : 'Cancel'}>
         <div className="modal-form">
           <Input label={i18n.language === 'ar' ? 'الكود' : 'Code'} value={form.product_code} onChange={e => setForm({...form, product_code: e.target.value})} disabled={!!editing} />
           <Input label={i18n.language === 'ar' ? 'الاسم' : 'Name'} value={form.product_name} onChange={e => setForm({...form, product_name: e.target.value})} />
