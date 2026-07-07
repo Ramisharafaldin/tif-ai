@@ -8,7 +8,7 @@ import type { InvData, Product } from '../types';
 const emptyForm = { product_code: '', product_name: '', category: '', unit_cost: 0, unit_price: 0 };
 
 const InventoryPage: React.FC = () => {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
   const [data, setData] = useState<InvData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -79,14 +79,14 @@ const InventoryPage: React.FC = () => {
     return 'normal' as const;
   };
 
-  if (loading) return <div className="page"><h2>{t('inventory.title')}</h2><div className="card-grid"><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /></div><SkeletonTable rows={8} cols={6} /></div>;
-  if (error) return <div className="page"><h2>{t('inventory.title')}</h2><p className="error">{error}</p></div>;
+  if (loading) return <div className="page"><h2>{i18n.language === 'ar' ? 'إدارة المخزون' : 'Inventory Management'}</h2><div className="card-grid"><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /></div><SkeletonTable rows={8} cols={6} /></div>;
+  if (error) return <div className="page"><h2>{i18n.language === 'ar' ? 'إدارة المخزون' : 'Inventory Management'}</h2><p className="error">{error}</p></div>;
   if (!data) return null;
 
   return (
     <div className="page">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
-        <h2>{t('inventory.management')}</h2>
+        <h2>{i18n.language === 'ar' ? 'إدارة المخزون' : 'Inventory Management'}</h2>
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
           <div className="toggle-group">
             <button className={`toggle-btn ${mode === 'value' ? 'active' : ''}`} onClick={() => setMode('value')}>{i18n.language === 'ar' ? 'قيمة' : 'Value'}</button>
@@ -100,18 +100,18 @@ const InventoryPage: React.FC = () => {
         <DateRangePicker startDate={startDate} endDate={endDate} onStartChange={setStartDate} onEndChange={setEndDate} />
         <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
           {i18n.language === 'ar' ? 'أيام التخزين' : 'Stock Days'}
-          <input type="number" min={1} max={365} value={targetDays} onChange={e => setTargetDays(Math.max(1, +e.target.value || 30))} style={{ width: 60, padding: '0.3rem 0.5rem', border: '1px solid var(--border)', borderRadius: 4, background: 'var(--bg-primary)', color: 'var(--text-primary)' }} />
+          <input type="number" min={1} max={365} value={targetDays} onChange={e => setTargetDays(Math.max(1, +e.target.value || 30))} style={{ width: 60, padding: '0.3rem 0.5rem', border: '1px solid var(--border-color)', borderRadius: '4px' }} />
         </label>
       </div>
 
       {data.summary && (
         <div className="card-grid">
-          <Card title={t('inventory.totalProducts')} value={(data.summary.total_products ?? 0).toLocaleString(locale)} />
-          <Card title={t('inventory.stockValue')} value={(data.summary.total_stock_value ?? 0).toLocaleString(locale)} />
-          <Card title={t('inventory.totalItems')} value={(data.summary.total_items ?? 0).toLocaleString(locale)} />
-          <Card variant="out" title={t('inventory.outOfStock')} value={data.summary.out_of_stock_count ?? 0} />
-          <Card variant="low" title={t('inventory.lowStock')} value={data.summary.low_stock_count ?? 0} />
-          <Card variant="over" title={t('inventory.overstocked')} value={data.summary.overstocked_count ?? 0} />
+          <Card title={i18n.language === 'ar' ? 'إجمالي المنتجات' : 'Total Products'} value={(data.summary.total_products ?? 0).toLocaleString(locale)} />
+          <Card title={i18n.language === 'ar' ? 'قيمة المخزون' : 'Stock Value'} value={(data.summary.total_stock_value ?? 0).toLocaleString(locale)} />
+          <Card title={i18n.language === 'ar' ? 'إجمالي الكميات' : 'Total Items'} value={(data.summary.total_items ?? 0).toLocaleString(locale)} />
+          <Card variant="out" title={i18n.language === 'ar' ? 'نفد المخزون' : 'Out of Stock'} value={data.summary.out_of_stock_count ?? 0} />
+          <Card variant="low" title={i18n.language === 'ar' ? 'مخزون منخفض' : 'Low Stock'} value={data.summary.low_stock_count ?? 0} />
+          <Card variant="over" title={i18n.language === 'ar' ? 'مخزون زائد' : 'Overstocked'} value={data.summary.overstocked_count ?? 0} />
         </div>
       )}
 
@@ -155,14 +155,14 @@ const InventoryPage: React.FC = () => {
         </table>
       </div>
 
-      <h3>{t('inventory.items')} ({data.items ? data.items.length : 0})</h3>
+      <h3>{i18n.language === 'ar' ? 'البنود' : 'Items'} ({data.items ? data.items.length : 0})</h3>
       <div className="table-wrap">
         <table>
           <thead><tr>
-            <th>{t('inventory.table.code')}</th>
-            <th>{t('inventory.table.name')}</th>
-            <th>{t('inventory.table.branch')}</th>
-            <th>{t('inventory.table.stock')}</th>
+            <th>{i18n.language === 'ar' ? 'الكود' : 'Code'}</th>
+            <th>{i18n.language === 'ar' ? 'الاسم' : 'Name'}</th>
+            <th>{i18n.language === 'ar' ? 'الفرع' : 'Branch'}</th>
+            <th>{i18n.language === 'ar' ? 'المخزون' : 'Stock'}</th>
             <th>{i18n.language === 'ar' ? 'المطلوب شراؤه' : 'Req. Purchase'}</th>
             <th>{i18n.language === 'ar' ? 'التوصيات' : 'Recommendations'}</th>
           </tr></thead>
@@ -210,7 +210,7 @@ const InventoryPage: React.FC = () => {
         </table>
       </div>
 
-      <Modal open={showModal} onClose={() => setShowModal(false)} title={editing ? (i18n.language === 'ar' ? 'تعديل المنتج' : 'Edit Product') : (i18n.language === 'ar' ? 'إضافة منتج' : 'Add Product')} onConfirm={handleSave} confirmText={i18n.language === 'ar' ? 'حفظ' : 'Save'} cancelText={i18n.language === 'ar' ? 'إلغاء' : 'Cancel'}>
+      <Modal open={showModal} onClose={() => setShowModal(false)} title={editing ? (i18n.language === 'ar' ? 'تعديل المنتج' : 'Edit Product') : (i18n.language === 'ar' ? 'إضافة منتج' : 'Add Product')} onSave={handleSave}>
         <div className="modal-form">
           <Input label={i18n.language === 'ar' ? 'الكود' : 'Code'} value={form.product_code} onChange={e => setForm({...form, product_code: e.target.value})} disabled={!!editing} />
           <Input label={i18n.language === 'ar' ? 'الاسم' : 'Name'} value={form.product_name} onChange={e => setForm({...form, product_name: e.target.value})} />
