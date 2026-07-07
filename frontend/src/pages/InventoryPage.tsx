@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import DateRangePicker from '../components/DateRangePicker';
-import { Card, SkeletonCard, SkeletonTable, Modal, Input, Button, Badge } from '../components/ui';
+import { Card, SkeletonCard, Modal, Input, Button, Badge } from '../components/ui';
 import { api } from '../utils/api';
 import type { InvData, Product } from '../types';
 
@@ -210,7 +210,7 @@ const InventoryPage: React.FC = () => {
         </table>
       </div>
 
-      <Modal open={showModal} onClose={() => setShowModal(false)} title={editing ? (i18n.language === 'ar' ? 'تعديل المنتج' : 'Edit Product') : (i18n.language === 'ar' ? 'إضافة منتج' : 'Add Product')} onConfirm={handleSave} confirmText={i18n.language === 'ar' ? 'حفظ' : 'Save'} cancelText={i18n.language === 'ar' ? 'إلغاء' : 'Cancel'}>
+      <Modal open={showModal} onClose={() => setShowModal(false)} title={editing ? (i18n.language === 'ar' ? 'تعديل المنتج' : 'Edit Product') : (i18n.language === 'ar' ? 'إضافة منتج' : 'Add Product')}>
         <div className="modal-form">
           <Input label={i18n.language === 'ar' ? 'الكود' : 'Code'} value={form.product_code} onChange={e => setForm({...form, product_code: e.target.value})} disabled={!!editing} />
           <Input label={i18n.language === 'ar' ? 'الاسم' : 'Name'} value={form.product_name} onChange={e => setForm({...form, product_name: e.target.value})} />
